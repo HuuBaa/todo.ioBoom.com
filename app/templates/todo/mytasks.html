@@ -1,0 +1,177 @@
+{% extends "todo/base.html" %}
+{% block title%}Todo{% endblock %}
+{% block navbar_nav%}
+    <div class="collapse navbar-collapse" id="navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li ><a href="{{url_for('todo.index')}}">Square<span class="sr-only">(current)</span></a></li>
+        <li class="active"><a href="{{url_for('todo.mytasks')}}">OnlineTodo</a></li>
+          <li><a href="{{url_for('todo.local')}}">LocalTodo</a></li>
+      </ul>
+         <ul class="nav navbar-nav navbar-right">
+        {%if current_user.is_authenticated%}
+        <li><a href="{{'/user/'+current_user.id|string}}">{{current_user.user_name}}</a></li>
+        <li><a href="/register">注册</a></li>
+         <li><a href="/logout">注销</a></li>
+        {%else%}
+        <li><a href="/login">登录</a></li>
+        <li><a href="/register">注册</a></li>
+        {% endif%}
+      </ul>
+    </div>
+{% endblock%}
+
+{% block main_content %}
+{% if current_user.is_authenticated%}
+
+<div id="app" >
+    <input type="text" class="form-control" placeholder="待办事项<100字以内>  回车添加" v-model="create_task" id="create_input"  maxlength="100" @keyup.enter="postTask">
+<br>
+    <br>
+    <br>
+<ul class="nav nav-pills nav-justified">
+  <li role="presentation" id="unfinished"><a @click="getPage('/todo/mytask',0)">待办 <span class="badge" v-text="unfinished_count"></span></a></li>
+  <li role="presentation" id="finished"><a @click="getPage('/todo/mytask',1)">已完成 <span class="badge" v-text="finished_count"></span></a></li>
+</ul>
+
+<br>
+
+<div class="panel panel-default"  v-for="task in tasks">
+  <div class="panel-heading" >
+        <span class="label label-success btn" v-if="!task.finished" @click="finishedTask(task.id,task.finished)" data-toggle="tooltip"  data-placement="bottom" title="完成任务"><span class="glyphicon glyphicon-ok" ></span></span>
+         <span class="label label-info btn" v-if="task.finished" @click="unfinishedTask(task.id,task.finished)" data-toggle="tooltip"  data-placement="bottom" title="加入待办"><span class="glyphicon glyphicon-pushpin"></span></span>
+        <span class="label label-danger pull-right btn" @click="delTask(task.id,task.finished)" data-toggle="tooltip"  data-placement="bottom" title="删除"><span class="glyphicon glyphicon-remove"></span></span>
+
+         <span class="label label-primary btn pull-right" v-if="!task.share" @click="shareTask(task.id,task.finished)" data-toggle="tooltip"  data-placement="bottom" title="分享"><span class="glyphicon glyphicon-share-alt"></span></span>
+
+         <span class="label label-warning btn pull-right" v-if="task.share" @click="unshareTask(task.id,task.finished)" data-toggle="tooltip"  data-placement="bottom" title="取消分享"><span class="glyphicon glyphicon-ban-circle"></span></span>
+  </div>
+  <div class="panel-body">
+     <span v-text="task.summary"></span>
+  </div>
+
+</div>
+</div>
+{% else %}
+<h3 class="text-center"><a href="/login">登录后</a>，可以使用</h3>
+<br>
+
+<img src="{{ url_for('static',filename='mytask.jpg')}}"  class="img-responsive center-block">
+{% endif %}
+{% endblock%}
+
+{% block script%}
+<script>
+
+$(function () { $("[data-toggle='tooltip']").tooltip(); });
+
+</script>
+
+<script>
+var data={
+    create_task:"",
+    tasks:[],
+    finished_count:0,
+    unfinished_count:0
+};
+
+
+function getPage(view,finished,event){
+
+
+    $.getJSON(view+'?finished='+finished,function (result) {
+        data.tasks=result['tasks'];
+        data.unfinished_count=result['unfinished_count'];
+        data.finished_count=result['finished_count'];
+    });
+    if (finished===0){
+        $('#unfinished').addClass("active" );
+        $('#finished').removeClass("active");
+
+
+    }else if(finished===1){
+        $('#unfinished').removeClass("active" );
+        $('#finished').addClass("active");
+
+    }
+
+}
+
+
+function delTask(task_id,finished){
+    $.get('/todo/delete/'+task_id,function (d) {
+        if (d.status==='del_ok'){
+            if (finished) getPage('/todo/mytask',1);
+            if (!finished) getPage('/todo/mytask',0);
+        }
+    })
+}
+
+
+function shareTask(task_id,finished){
+    $.get('/todo/share/'+task_id,function (d) {
+        if (d.status==='share_ok'){
+            if (finished) getPage('/todo/mytask',1);
+            if (!finished) getPage('/todo/mytask',0);
+        }
+    })
+}
+
+
+function unshareTask(task_id,finished){
+    $.get('/todo/unshare/'+task_id,function (d) {
+        if (d.status==='unshare_ok'){
+            if (finished) getPage('/todo/mytask',1);
+            if (!finished) getPage('/todo/mytask',0);
+        }
+    })
+}
+
+
+
+function unfinishedTask(task_id,finished){
+    $.get('/todo/unfinished/'+task_id,function (d) {
+        if (d.status==='unfinished_ok'){
+            if (finished) getPage('/todo/mytask',1);
+            if (!finished) getPage('/todo/mytask',0);
+        }
+    })
+}
+
+function finishedTask(task_id,finished){
+    $.get('/todo/finished/'+task_id,function (d) {
+        if (d.status==='finished_ok'){
+            if (finished) getPage('/todo/mytask',1);
+            if (!finished) getPage('/todo/mytask',0);
+        }
+    })
+}
+getPage('/todo/mytask',0);
+
+var app=new Vue({
+    el:"#app",
+    data:data,
+    methods: {
+        postTask: function () {
+            $.ajax({
+                  type: "post",
+                  dataType: 'json',
+                  url: '/todo/createtask',
+                  contentType: 'application/json',
+                  data: JSON.stringify({'create_task':this.create_task}),
+                  success: function (d) {
+                      if (d.status = 'ok') {
+                          getPage('/todo/mytask',0);
+                          data.create_task="";
+                      }
+                  }
+            });
+        },
+        getPage:getPage
+    }
+});
+
+</script>
+
+
+{% endblock %}
+
