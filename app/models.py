@@ -55,13 +55,12 @@ class User(UserMixin,db.Model):
     def __init__(self,**kw):
         super(User, self).__init__(**kw)
 
-        if self.user_email is not None and self.avatar_hash is None:
-            self.avatar_hash=hashlib.md5(self.user_email.encode('utf-8')).hexdigest()
+        if self.user_name is not None and self.avatar_hash is None:
+            self.avatar_hash=hashlib.md5(self.user_name.encode('utf-8')).hexdigest()
 
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
-    user_name = db.Column(db.String(64))
-    user_email = db.Column(db.String(128), unique=True, index=True)
+    user_name = db.Column(db.String(64), unique=True, index=True)
     user_password = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
     admin = db.Column(db.Boolean, default=False)
@@ -76,7 +75,6 @@ class User(UserMixin,db.Model):
         seed()
         for i in range(count):
             u = User(user_name=forgery_py.internet.user_name(),
-                     user_email=forgery_py.internet.email_address(),
                      user_password=forgery_py.lorem_ipsum.word(),
                      confirmed=True,
                      member_since=forgery_py.date.date(True)
@@ -92,7 +90,7 @@ class User(UserMixin,db.Model):
             url = 'https://www.gravatar.com/avatar/'
         else:
             url = 'http://www.gravatar.com/avatar/'
-        hash = self.avatar_hash or hashlib.md5(self.user_email.encode('utf-8')).hexdigest()
+        hash = self.avatar_hash or hashlib.md5(self.user_name.encode('utf-8')).hexdigest()
         return '{url}{hash}?s={size}&d={default}&r={rating}'.format(url=url, hash=hash, size=size, default=default,
                                                       rating=rating)
 

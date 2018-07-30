@@ -9,9 +9,9 @@ from app import db
 @auth.route('/login',methods=['POST','GET'])
 def login():
     if request.method=='POST':
-        email=request.form.get('email')
+        user_name=request.form.get('user_name')
         password=request.form.get('password')
-        user=User.query.filter_by(user_email=email).first()
+        user=User.query.filter_by(user_name=user_name).first()
         if user is not None and user.verify_password(password):
             login_user(user,True)
             flash('登录成功!')
@@ -28,7 +28,7 @@ def login():
 def register():
     form=RegisterForm()
     if form.validate_on_submit():
-        user = User(user_email=form.email.data, user_name=form.username.data, password=form.password.data)
+        user = User( user_name=form.username.data, password=form.password.data)
         db.session.add(user)
         db.session.commit()
         flash('注册成功')
