@@ -206,7 +206,7 @@
                 var all_tasks = this.all_tasks;
                 all_tasks.forEach(function (item, index) {
                     if (item.id === i) {
-                        if (status === undefined) {
+                        if (finish === undefined) {
                             all_tasks.splice(index, 1);
                         } else {
                             item.done = finish;
