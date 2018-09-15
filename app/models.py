@@ -1,11 +1,13 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
-from . import db,login_manager
+# -*- coding: utf-8 -*-
+from . import db, login_manager
 from datetime import datetime
 from flask_login import UserMixin
-from flask import  request
+from flask import request
 import hashlib
-from werkzeug.security import generate_password_hash,check_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
+git
+
 class Tasks(db.Model):
     __tablename__ = 'tasks'
     id = db.Column(db.Integer, primary_key=True)
@@ -37,26 +39,25 @@ class Tasks(db.Model):
                 db.session.rollback()
 
     def to_json(self):
-        json_task={
-            'id':self.id,
-            'summary':self.summary,
-            'post_time':self.post_time,
-            'share':self.share,
-            'finished':self.finished,
-            'user_id':self.user_id,
-            'user_name':self.user.user_name,
-            'user_gravatar':self.user.gravatar(size=40)
+        json_task = {
+            'id': self.id,
+            'summary': self.summary,
+            'post_time': self.post_time,
+            'share': self.share,
+            'finished': self.finished,
+            'user_id': self.user_id,
+            'user_name': self.user.user_name,
+            'user_gravatar': self.user.gravatar(size=40)
         }
         return json_task
 
 
-class User(UserMixin,db.Model):
-
-    def __init__(self,**kw):
+class User(UserMixin, db.Model):
+    def __init__(self, **kw):
         super(User, self).__init__(**kw)
 
         if self.user_name is not None and self.avatar_hash is None:
-            self.avatar_hash=hashlib.md5(self.user_name.encode('utf-8')).hexdigest()
+            self.avatar_hash = hashlib.md5(self.user_name.encode('utf-8')).hexdigest()
 
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
@@ -66,7 +67,8 @@ class User(UserMixin,db.Model):
     admin = db.Column(db.Boolean, default=False)
     tasks = db.relationship('Tasks', backref='user', lazy='dynamic')
     member_since = db.Column(db.DateTime, default=datetime.utcnow)
-    avatar_hash=db.Column(db.String(32))
+    avatar_hash = db.Column(db.String(32))
+
     @staticmethod
     def generate_fake(count=50):
         from sqlalchemy.exc import IntegrityError
@@ -92,27 +94,29 @@ class User(UserMixin,db.Model):
             url = 'http://www.gravatar.com/avatar/'
         hash = self.avatar_hash or hashlib.md5(self.user_name.encode('utf-8')).hexdigest()
         return '{url}{hash}?s={size}&d={default}&r={rating}'.format(url=url, hash=hash, size=size, default=default,
-                                                      rating=rating)
+                                                                    rating=rating)
 
     @property
     def password(self):
         raise AttributeError('密码不可读')
 
     @password.setter
-    def password(self,password):
-        self.user_password=generate_password_hash(password)
+    def password(self, password):
+        self.user_password = generate_password_hash(password)
 
-    def verify_password(self,password):
-        return check_password_hash(self.user_password,password)
+    def verify_password(self, password):
+        return check_password_hash(self.user_password, password)
 
     def to_json(self):
-        json_user={
-            'user_id':self.user_id,
-            'user_name':self.user.user_name,
-            'user_gravatar':self.user.gravatar(size=100),
-            'member_since':self.member_since
+        json_user = {
+            'user_id': self.user_id,
+            'user_name': self.user.user_name,
+            'user_gravatar': self.user.gravatar(size=100),
+            'member_since': self.member_since
         }
         return json_task
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
