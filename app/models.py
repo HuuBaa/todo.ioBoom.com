@@ -6,7 +6,6 @@ from flask_login import UserMixin
 from flask import request
 import hashlib
 from werkzeug.security import generate_password_hash, check_password_hash
-git
 
 class Tasks(db.Model):
     __tablename__ = 'tasks'
