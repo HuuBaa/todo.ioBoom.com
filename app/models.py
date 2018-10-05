@@ -7,6 +7,7 @@ from flask import request
 import hashlib
 from werkzeug.security import generate_password_hash, check_password_hash
 
+
 class Tasks(db.Model):
     __tablename__ = 'tasks'
     id = db.Column(db.Integer, primary_key=True)
