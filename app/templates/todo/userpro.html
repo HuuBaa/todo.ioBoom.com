@@ -23,13 +23,14 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="{{url_for('todo.index')}}" >Tasks</a>
+      <a class="navbar-brand" href="{{url_for('todo.index')}}" >Todo</a>
     </div>
     {% block navbar_nav%}
     <div class="collapse navbar-collapse" id="navbar-collapse-1">
       <ul class="nav navbar-nav">
-        <li ><a href="{{url_for('todo.index')}}">TSquare<span class="sr-only">(current)</span></a></li>
-        <li><a href="{{url_for('todo.mytasks')}}">MyTodo</a></li>
+        <li class="active"><a href="{{url_for('todo.index')}}">Square<span class="sr-only">(current)</span></a></li>
+        <li><a href="{{url_for('todo.mytasks')}}">OnlineTodo</a></li>
+        <li><a href="{{url_for('todo.local')}}">LocalTodo</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         {%if current_user.is_authenticated%}

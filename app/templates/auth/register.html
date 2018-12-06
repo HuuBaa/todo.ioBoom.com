@@ -16,7 +16,10 @@
         </div>
     {% endfor %}
             {{wtf.quick_form(form)}}
+            <br>
+            <a href="{{url_for('todo.index')}}">返回主页<span class="sr-only">(current)</span></a>
         </div>
+
  </div>
 
 {% endblock%}
