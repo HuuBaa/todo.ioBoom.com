@@ -4,6 +4,7 @@ import os
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+
 class Config:
     SECRET_KEY = 'HUU IS COOL'
     FLASK_MAIL_SUBJECT_PREFIX = '[任务村]'
